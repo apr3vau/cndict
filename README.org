@@ -1,0 +1,339 @@
+* cndict
+
+Chinese Dictionary 中文辞典。
+
+一个非常简单的小工具，希望大家喜欢。
+
+#+begin_quote
+善为文者，富于万篇，贫于一字。——《文心雕龙》
+#+end_quote
+
+本工具中的中文字典与词典数据来自 [[https://github.com/mapull/chinese-dictionary]] ，
+遵循 MIT 协议使用，谨在此向作者表示衷心的感谢！
+
+** 截图
+
+[[file:res/6.png]]
+
+[[file:res/7.png]]
+
+[[file:res/8.png]]
+
+** 安装
+
+下载 ~cndict.el~ 、 ~cndict-char-data.el~ 、 ~cndict-word-data.el~ 并将其所在目
+录加入~load-path~ ，在配置文件中加入 ~(require 'cndict)~ 即可。
+
+#+begin_src sh
+git clone https://github.com/3vau/cndict ~/.emacs.d/site-lisp/
+#+end_src
+
+#+begin_src elisp
+(add-to-list 'load-path "~/.emacs.d/site-lisp/cndict/")
+(require 'cndict)
+#+end_src
+
+** 使用
+
+~cndict.el~ 提供两个命令： ~cndict~ 和 ~cndict-minibuffer~ 。
+
+选中你想查询的字或词，或将你想查询的字词复制进 kill-ring ，随后执行上述命令。
+~cndict~ 命令将使用一个临时 buffer 显示完整的查询结果，~cndict-minibuffer~ 将适
+当缩短查询结果并使用 minibuffer 显示出来。
+
+~cndict-minibuffer~ 命令输出的最大长度可以通过 ~cndict-short-length~ 变量设置。
+受限于字符宽度等问题，最终输出长度并不会与该变量的值完全吻合。
+
+若词典中没有所查询的词，将查询该词的最后一个字；若仍没有结果将提示查询失败。
+
+** cndict 源码
+
+*** 头部注释
+
+包含 GPL 声明和英文简介啊什么的，例行公事~
+
+#+begin_src emacs-lisp :tangle (rosa/export 'cndict)
+;;; cnhl.el --- Make Chinese highlight lexically -*- lexical-binding: t -*-
+
+;; Copyright (C) 2022 Rosario S.E.
+
+;; Author: Rosario S.E. <ser3vau@gmail.com>
+;; URL: https://github.com/3vau/cnhl
+
+;; This file is not part of GNU Emacs.
+;;
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;; cndict - Chinese Dictionary.
+;;
+;; It used dictionary data from https://github.com/mapull/chinese-dictionary,
+;; Thanks to it's author.
+
+;;; Code:
+#+end_src
+*** 加载字典与词典
+
+加载字典文件和词典文件。这两个文件提供了 ~cndict-char-dict-table~ 和
+~cndict-word-dict-table~ 两个 hash-table 常量。
+
+~cndict-char-dict-table~ 结构，以“了”字为例：
+
+#+begin_src emacs-lisp :tangle no
+#s(hash-table
+   data (
+	 "了" #s(hash-table
+		 data (
+		       "le" #s(hash-table
+			       data (
+				     "用在动词或形容词后,表示完成 。如:我已经问了老王;人老了,身体差了;头发白了;这双鞋太小了" nil
+				     "表示肯定语气 。如:明天又是星期六了;要过新年了,人们都很高兴" nil
+				     "表示促进或劝止 。如:快躲了;别吵了!闪开了!" nil
+				     "表示感叹语气 。如:好了!别闹了!" nil
+				     "另见liǎo" nil
+				     )
+			       )
+		       "liǎo" #s(hash-table
+				 data (
+				       "(象形。从子,无臂。小篆字象婴儿束其两臂形。初生的婴儿,往往束其两臂而裹之。本义:束婴儿两臂)" nil
+				       "手弯曲" (list
+						 "了,尥也。从子无臂象形。——《说文》。按,犹交也。手之挛曰了,胫之絷曰尥。"
+						 "凡物二股或一股结纠紾缚不直伸者曰了戾。——段玉裁《说文解字注》"
+						 )
+				       "又如:了尥(手腿弯曲,引申指二物纠结绞缠不直伸的样子)" nil
+				       "假借为“憭”、“悟”。懂得,明白其意思" (list
+									    "嫌人不了。——《尔雅·释丘》注" "虽神气不变,而心了其故。——《世说新语》"
+									    )
+				       "如:了法(领悟法理);了得事(懂行);了利(清楚,明白);了然(明白,清楚)" nil
+				       "结束,了结" (list
+						    "小乔初嫁了。——宋·苏轼《念奴娇·赤壁怀古》"
+						    )
+				       "又如:了还(了却,偿还);了局(结局;结束);了了(了结了);了劣(了账;了结);了休(终止,了结)" nil
+				       "聪敏,颖慧" (list
+						    "小而聪了,大未必奇。——《后汉书·孔融传》" "了,快也。秦曰了。——《方言二》"
+						    )
+				       "又如:了慧(聪明);了干(精明干练)" nil
+				       "清楚,明晰 。如:了利(清楚;明白);了辩(对答清楚敏捷)" nil
+				       "明亮,光亮" (list
+						    "收到一片秋香,清辉了如雪。——清·纳兰性德《琵琶仙》"
+						    )
+				       "完全,全然——与“无”、“不”连用,用在动词或形容词前面,表示范围,相当于“完全。如:了无恐色;了不相涉;了不可得(到最后也得不到)" nil
+				       "放在动词之后,与“得”或“不”连用,表示可能 。如:办得了;你来得了来不了?" nil
+				       "另见le" nil)
+				 )
+		       )
+		 )
+	 )
+   )
+#+end_src
+
+~cndict-word-dict-table~ 是一个简单的哈希表， key 值是词本身， value 是该词经过
+初步排版后的释义。
+
+#+begin_src emacs-lisp :tangle (rosa/export 'cndict)
+(require 'cndict-char-data)
+(require 'cndict-word-data)
+#+end_src
+
+*** 从字典中获取单字信息
+
+考虑到后续开发需求以及语料库的详细程度，字典部分采用了更为细致的嵌套哈希表方式保
+存，因此需要独立的函数进行逐层解析并排版。
+
+~cndict-char-content-detail~ 将生成一个完整的、带换行的释义，而
+~cndict-char-content~ 将生成一个不带例句的、长度（大致）不超过
+~cndict-short-length~ 的释义。
+
+缩短的释义将保持每个释义至少有 20 字符的长度，仍多出的部分将直接丢弃。
+
+#+begin_src emacs-lisp :tangle (rosa/export 'cndict)
+(defvar cndict-short-length 100)
+
+(defun cndict-char-content-detail (str)
+  (let ((table (gethash str cndict-char-dict-table))
+	(r (format "* %s \n\n" str)))
+    (maphash
+     #'(lambda (pinyin expl)
+	 (setq r
+	       (concat
+		r
+		(format
+		 "- %s: %s\n\n"
+		 pinyin
+		 (let ((num 1)
+		       (s ""))
+		   (maphash
+		    #'(lambda (content detail)
+			(setq s (concat
+				 s "\n\n  " (number-to-string num) ". "
+				 content "; "
+				 (when detail
+				   (concat
+				    "\n     "
+				    (string-join detail "; "))))
+			      num (1+ num)))
+		    expl)
+		   s)))))
+     table)
+    r))
+
+(defun cndict-char-content (str)
+  (let ((table (gethash str cndict-char-dict-table))
+	(r (format "* %s " str)))
+    (maphash
+     #'(lambda (pinyin expl)
+	 (setq r (concat
+		  r
+		  (format "%s: %s| "
+			  pinyin
+			  (let* ((num 0)
+				 (contents (hash-table-keys expl))
+				 (l (max (/ (- cndict-short-length
+					       8 (length pinyin))
+					    (length contents))
+					 20)))
+			    (mapconcat
+			     #'(lambda (cont)
+				 (setq num (1+ num))
+				 (concat
+				  (number-to-string num) ". "
+				  (if (< (length cont) l)
+				      cont
+				    (concat (substring cont 0 l)
+					    "..."))
+				  "; "))
+			     contents ""))))))
+     table)
+    (if (> (length r) cndict-short-length)
+	(concat (substring r 0 (- cndict-short-length 3)) "...")
+      r)))
+#+end_src
+
+*** 查询函数
+
+#+begin_src emacs-lisp :tangle (rosa/export 'cndict)
+(defun cndict-minibuffer (str)
+  "查询选中字词或上一个 kill-ring 记录的字词，通过 minibuffer 输出简短的结果。"
+  (interactive (list (or (funcall region-extract-function nil)
+			 (current-kill 0 t))))
+  (let ((r (or (ignore-errors
+		   (string-replace "\n\n  " "" (gethash str cndict-word-dict-table)))
+	       (ignore-errors
+		 (cndict-char-content
+		  (char-to-string (aref str (1- (length str))))))
+	       "未找到该词")))
+    (message r)))
+
+(defun cndict (str)
+  "查询选中字词或上一个 kill-ring 记录的字词，使用临时 buffer 输出完整的结果。"
+  (interactive (list (or (funcall region-extract-function nil)
+			 (current-kill 0 t))))
+  (let ((r (or (gethash str cndict-word-dict-table)
+	       (ignore-errors
+		 (cndict-char-content-detail
+		  (char-to-string (aref str (1- (length str)))))))))
+    (if r
+	(progn (with-temp-buffer-window
+		   (format "“%s”的释义*"
+			   (substring
+			    r 2
+			    (progn (string-match " \n\n" r)
+				   (match-beginning 0))))
+		   (list (lambda (_ _) (org-mode) (toggle-word-wrap -1) nil))
+		   nil
+		 (with-current-buffer standard-output
+		   (insert r))))
+      (message "未找到该词"))))
+
+(provide 'cndict)
+#+end_src
+
+*** 生成字典与词典哈希表的代码
+
+第一段用于生成字典，第二段用于生成词典。
+
+只是一个简单的解析而已ww
+
+如果要使用的话记得改参数。
+
+#+begin_src emacs-lisp :tangle no
+(let ((r (make-hash-table :test #'equal)))
+  (seq-doseq (char (f-read "~/chinese-dictionary/data/character/char_base_detail.json"))
+    (let ((pinyintable (make-hash-table :test #'equal)))
+      (seq-doseq (pron (gethash "pronunciations" char))
+	(let ((table (make-hash-table :test #'equal)))
+	  (seq-doseq (expl (gethash "explanations" pron))
+	    (let ((meaning)
+		  (detail)
+		  (modern (gethash "morden" expl))
+		  (same (gethash "same" expl))
+		  (refer (gethash "refer" expl))
+		  (simplified (gethash "simplified" expl))
+		  (cont (gethash "content" expl)))
+	      (when modern
+		(setq meaning (format "古字，同“%s”; " modern)))
+	      (when same
+		(setq meaning (concat meaning (format "同“%s”; " same))))
+	      (when simplified
+		(setq meaning (concat meaning
+				      (format "“%s”的繁体; " simplified))))
+	      (when refer
+		(setq meaning (concat meaning (format "[“%s”]; " refer))))
+	      (when cont
+		(setq meaning (concat meaning
+				      (if (equal (type-of cont) 'vector)
+					  (aref cont 0)
+					cont))))
+	      (puthash meaning (append (gethash "detail" expl) nil) table)))
+	  (puthash (gethash "pinyin" pron) table pinyintable)))
+      (puthash (gethash "char" char) pinyintable r)))
+  (f-write (format "(defconst cndict-char-dict-table %S)\n\n(provide 'cndict-char-data)" r)
+	   'utf-8 "~/cndict-char-data.el"))
+
+(let ((r (make-hash-table :test #'equal)))
+  (seq-doseq (table (f-read "~/chinese-dictionary/data/word/word.json"))
+    (let ((s (format "* %s \n\n  %s\n\n  "
+		     (gethash "word" table)
+		     (gethash "explanation" table)))
+	  (source (gethash "source" table))
+	  (similar (gethash "similar" table))
+	  (opposite (gethash "opposite" table)))
+      (when similar
+	(setq s (format "%s\n\n  近义: %s; " s similar)))
+      (when opposite
+	(setq s (format "%s\n\n  反义: %s; " s opposite)))
+      (when source
+	(setq s (format "%s\n\n  出自%s: “%s”; "
+			s (gethash "book" source) (gethash "text" source))))
+      (puthash (gethash "word" table) s r)))
+  (f-write (format "(defconst cndict-word-dict-table %S)\n\n(provide 'cndict-word-data)" r)
+	   'utf-8 "~/cndict-word-data.el"))
+#+end_src
+
+** GPL-3.0 声明
+
+This file is not part of GNU Emacs.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
