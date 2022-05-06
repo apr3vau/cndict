@@ -24,6 +24,10 @@ Chinese Dictionary 中文辞典。
 下载 ~cndict.el~ 、 ~cndict-char-data.el~ 、 ~cndict-word-data.el~ 并将其所在目
 录加入~load-path~ ，在配置文件中加入 ~(require 'cndict)~ 即可。
 
+#+begin_src sh
+git clone https://github.com/3vau/cndict ~/.emacs.d/site-lisp/
+#+end_src
+
 #+begin_src elisp
 (add-to-list 'load-path "~/.emacs.d/site-lisp/cndict/")
 (require 'cndict)
