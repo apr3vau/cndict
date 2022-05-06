@@ -25,6 +25,11 @@
 ;;
 ;; It used dictionary data from https://github.com/mapull/chinese-dictionary,
 ;; Thanks to it's author.
+;;
+;; Thanks to @manateelazycat(https://emacs-china.org/u/manateelazycat/)
+;; for inspiration.
+;;
+;; Thanks to all my friends in https://emacs-china.org
 
 ;;; Code:
 
