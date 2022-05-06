@@ -1,4 +1,4 @@
-;;; cnhl.el --- Make Chinese highlight lexically -*- lexical-binding: t -*-
+;;; cndict.el --- Chinese Dictionary -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022 Rosario S.E.
 
@@ -126,3 +126,5 @@
       (message "未找到该词"))))
 
 (provide 'cndict)
+
+;;; cndict.el ends here
