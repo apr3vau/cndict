@@ -1,3 +1,33 @@
+;;; cnhl.el --- Make Chinese highlight lexically -*- lexical-binding: t -*-
+
+;; Copyright (C) 2022 Rosario S.E.
+
+;; Author: Rosario S.E. <ser3vau@gmail.com>
+;; URL: https://github.com/3vau/cnhl
+
+;; This file is not part of GNU Emacs.
+;;
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;; cndict - Chinese Dictionary.
+;;
+;; It used dictionary data from https://github.com/mapull/chinese-dictionary,
+;; Thanks to it's author.
+
+;;; Code:
+
 (require 'cndict-char-data)
 (require 'cndict-word-data)
 
@@ -63,7 +93,9 @@
       r)))
 
 (defun cndict-minibuffer (str)
-  (interactive (list (funcall region-extract-function nil)))
+  "查询选中字词或上一个 kill-ring 记录的字词，通过 minibuffer 输出简短的结果。"
+  (interactive (list (or (funcall region-extract-function nil)
+			 (current-kill 0 t))))
   (let ((r (or (ignore-errors
 		   (string-replace "\n\n  " "" (gethash str cndict-word-dict-table)))
 	       (ignore-errors
@@ -73,7 +105,9 @@
     (message r)))
 
 (defun cndict (str)
-  (interactive (list (funcall region-extract-function nil)))
+  "查询选中字词或上一个 kill-ring 记录的字词，使用临时 buffer 输出完整的结果。"
+  (interactive (list (or (funcall region-extract-function nil)
+			 (current-kill 0 t))))
   (let ((r (or (gethash str cndict-word-dict-table)
 	       (ignore-errors
 		 (cndict-char-content-detail
