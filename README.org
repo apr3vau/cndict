@@ -11,6 +11,9 @@ Chinese Dictionary 中文辞典。
 本工具中的中文字典与词典数据来自 [[https://github.com/mapull/chinese-dictionary]] ，
 遵循 MIT 协议使用，谨在此向作者表示衷心的感谢！
 
+感谢[[https://emacs-china.org][emacs-china]]各位朋友的鼓励。感谢[[https://emacs-china.org/u/manateelazycat/][@manateelazycat]]
+前辈在词典格式上的帮助。
+
 ** 截图
 
 [[file:res/6.png]]
@@ -53,7 +56,7 @@ git clone https://github.com/3vau/cndict ~/.emacs.d/site-lisp/
 包含 GPL 声明和英文简介啊什么的，例行公事~
 
 #+begin_src emacs-lisp :tangle (rosa/export 'cndict)
-;;; cnhl.el --- Make Chinese highlight lexically -*- lexical-binding: t -*-
+;;; cndict.el --- Chinese Dictionary -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022 Rosario S.E.
 
@@ -80,6 +83,11 @@ git clone https://github.com/3vau/cndict ~/.emacs.d/site-lisp/
 ;;
 ;; It used dictionary data from https://github.com/mapull/chinese-dictionary,
 ;; Thanks to it's author.
+;;
+;; Thanks to @manateelazycat(https://emacs-china.org/u/manateelazycat/)
+;; for inspiration.
+;;
+;; Thanks to all my friends in https://emacs-china.org
 
 ;;; Code:
 #+end_src
