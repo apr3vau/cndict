@@ -3,7 +3,7 @@
 ;; Copyright (C) 2022 Rosario S.E.
 
 ;; Author: Rosario S.E. <ser3vau@gmail.com>
-;; URL: https://github.com/3vau/cnhl
+;; URL: https://github.com/3vau/cndict
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -35,6 +35,10 @@
 
 (require 'cndict-char-data)
 (require 'cndict-word-data)
+
+(defun cndict-char-pinyin (str)
+  "输入字符，返回其读音的列表"
+  (hash-table-keys (gethash str cndict-char-dict-table)))
 
 (defvar cndict-short-length 100)
 

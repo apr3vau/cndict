@@ -11,8 +11,8 @@ Chinese Dictionary 中文辞典。
 本工具中的中文字典与词典数据来自 [[https://github.com/mapull/chinese-dictionary]] ，
 遵循 MIT 协议使用，谨在此向作者表示衷心的感谢！
 
-感谢[[https://emacs-china.org][emacs-china]]各位朋友的鼓励。感谢[[https://emacs-china.org/u/manateelazycat/][@manateelazycat]]
-前辈在词典格式上的帮助。
+感谢[[https://emacs-china.org][ emacs-china ]]各位朋友的鼓励。感谢 [[https://emacs-china.org/u/manateelazycat/][@manateelazycat]] 前辈、 [[https://ldbeth.sdf.org/][@LdBeth]] 前辈在词典
+格式上的帮助。
 
 ** 截图
 
@@ -49,6 +49,9 @@ git clone https://github.com/3vau/cndict ~/.emacs.d/site-lisp/
 
 若词典中没有所查询的词，将查询该词的最后一个字；若仍没有结果将提示查询失败。
 
+cndict 另外还提供一个查询单字拼音的函数 ~cndict-char-pinyin~ ，输入单字，返回这
+个字所有读音的列表，可供有需要的同学使用。
+
 ** cndict 源码
 
 *** 头部注释
@@ -61,7 +64,7 @@ git clone https://github.com/3vau/cndict ~/.emacs.d/site-lisp/
 ;; Copyright (C) 2022 Rosario S.E.
 
 ;; Author: Rosario S.E. <ser3vau@gmail.com>
-;; URL: https://github.com/3vau/cnhl
+;; URL: https://github.com/3vau/cndict
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -153,8 +156,15 @@ git clone https://github.com/3vau/cndict ~/.emacs.d/site-lisp/
 (require 'cndict-char-data)
 (require 'cndict-word-data)
 #+end_src
+*** 获取单字拼音的函数
 
-*** 从字典中获取单字信息
+#+begin_src emacs-lisp :tangle (rosa/export 'cndict)
+(defun cndict-char-pinyin (str)
+  "输入字符，返回其读音的列表"
+  (hash-table-keys (gethash str cndict-char-dict-table)))
+#+end_src
+
+*** 从字典中获取单字释义
 
 考虑到后续开发需求以及语料库的详细程度，字典部分采用了更为细致的嵌套哈希表方式保
 存，因此需要独立的函数进行逐层解析并排版。
@@ -265,6 +275,8 @@ git clone https://github.com/3vau/cndict ~/.emacs.d/site-lisp/
       (message "未找到该词"))))
 
 (provide 'cndict)
+
+;;; cndict.el ends here
 #+end_src
 
 *** 生成字典与词典哈希表的代码
