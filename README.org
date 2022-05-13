@@ -22,6 +22,8 @@ Chinese Dictionary 中文辞典。
 
 [[file:res/8.png]]
 
+[[file:res/14.png]]
+
 ** 安装
 
 下载 ~cndict.el~ 、 ~cndict-char-data.el~ 、 ~cndict-word-data.el~ 并将其所在目
@@ -94,7 +96,7 @@ cndict 另外还提供一个查询单字拼音的函数 ~cndict-char-pinyin~ ，
 
 ;;; Code:
 #+end_src
-*** 加载字典与词典
+*** 加载字典、词典和韵字表
 
 加载字典文件和词典文件。这两个文件提供了 ~cndict-char-dict-table~ 和
 ~cndict-word-dict-table~ 两个 hash-table 常量。
@@ -155,15 +157,8 @@ cndict 另外还提供一个查询单字拼音的函数 ~cndict-char-pinyin~ ，
 #+begin_src emacs-lisp :tangle (rosa/export 'cndict)
 (require 'cndict-char-data)
 (require 'cndict-word-data)
+(require 'cndict-tongyun-data)
 #+end_src
-*** 获取单字拼音的函数
-
-#+begin_src emacs-lisp :tangle (rosa/export 'cndict)
-(defun cndict-char-pinyin (str)
-  "输入字符，返回其读音的列表"
-  (hash-table-keys (gethash str cndict-char-dict-table)))
-#+end_src
-
 *** 从字典中获取单字释义
 
 考虑到后续开发需求以及语料库的详细程度，字典部分采用了更为细致的嵌套哈希表方式保
@@ -246,7 +241,8 @@ cndict 另外还提供一个查询单字拼音的函数 ~cndict-char-pinyin~ ，
   (interactive (list (or (funcall region-extract-function nil)
 			 (current-kill 0 t))))
   (let ((r (or (ignore-errors
-		   (string-replace "\n\n  " "" (gethash str cndict-word-dict-table)))
+		   (string-replace "\n\n  " ""
+				   (gethash str cndict-word-dict-table)))
 	       (ignore-errors
 		 (cndict-char-content
 		  (char-to-string (aref str (1- (length str))))))
@@ -263,7 +259,7 @@ cndict 另外还提供一个查询单字拼音的函数 ~cndict-char-pinyin~ ，
 		  (char-to-string (aref str (1- (length str)))))))))
     (if r
 	(progn (with-temp-buffer-window
-		   (format "“%s”的释义*"
+		   (format "*“%s”的释义*"
 			   (substring
 			    r 2
 			    (progn (string-match " \n\n" r)
@@ -277,6 +273,144 @@ cndict 另外还提供一个查询单字拼音的函数 ~cndict-char-pinyin~ ，
 (provide 'cndict)
 
 ;;; cndict.el ends here
+#+end_src
+
+*** 获取单字拼音的函数
+
+#+begin_src emacs-lisp :tangle (rosa/export 'cndict)
+(defun cndict-char-pinyin (str)
+  "输入字符，返回其读音的列表"
+  (hash-table-keys (gethash str cndict-char-dict-table)))
+#+end_src
+
+*** 判断拼音的声调和在中华通韵中的韵部
+
+#+begin_src emacs-lisp :tangle (rosa/export 'cndict)
+(defconst cndict-tune-name-alist
+  '((1 . "阴平")
+    (2 . "阳平")
+    (3 . "上声")
+    (4 . "去声")))
+
+(defun cndict-lastn= (n targ str)
+  (condition-case err
+      (string-match-p targ (char-to-string (elt str (- (length str) n 1))))
+    (t nil)))
+
+(defun cnrhy-pinyin-details (pinyin)
+  (let ((tune (cond ((string-match-p "[àòèìùǜ]" pinyin) 4)
+		    ((string-match-p "[ǎǒěǐǔǚ]" pinyin) 3)
+		    ((string-match-p "[áóéíúǘ]" pinyin) 2)
+		    ((string-match-p "[āōēīūǖ]" pinyin) 1)
+		    (t 0)))
+	(tongyun-rhyme))
+    (setq pinyin (replace-regexp-in-string "[āáǎàɑ]" "a" pinyin))
+    (setq pinyin (replace-regexp-in-string "[ōóǒò]" "o" pinyin))
+    (setq pinyin (replace-regexp-in-string "[ēéěè]" "e" pinyin))
+    (setq pinyin (replace-regexp-in-string "[īíǐì]" "i" pinyin))
+    (setq pinyin (replace-regexp-in-string "[ūúǔù]" "u" pinyin))
+    (setq pinyin (replace-regexp-in-string "[ǖǘǚǜü]" "v" pinyin))
+    (setq tongyun-rhyme
+	  (cond ((cndict-lastn= 0 "a" pinyin) 1)
+		((cndict-lastn= 0 "o" pinyin)
+		 (if (cndict-lastn= 1 "a" pinyin)
+		     9
+		   2))
+		((cndict-lastn= 0 "e" pinyin) 3)
+		((cndict-lastn= 0 "i" pinyin)
+		 (cond ((cndict-lastn= 1 "a" pinyin) 7)
+		       ((cndict-lastn= 1 "[ue]" pinyin) 8)
+		       (t 4)))
+		((cndict-lastn= 0 "u" pinyin)
+		 (cond ((cndict-lastn= 1 "[oi]" pinyin) 10)
+		       ((cndict-lastn= 1 "[jxqy]" pinyin) 6)
+		       (t 5)))
+		((cndict-lastn= 0 "v" pinyin) 6)
+		((cndict-lastn= 0 "n" pinyin)
+		 (if (cndict-lastn= 1 "a" pinyin)
+		     11
+		   12))
+		((cndict-lastn= 0 "[gɡ]" pinyin)
+		 (cond ((cndict-lastn= 2 "o" pinyin) 15)
+		       ((cndict-lastn= 2 "[ie]" pinyin) 14)
+		       (t 13)))
+		((cndict-lastn= 0 "r" pinyin) 16)
+		(t 17)))
+    (cons tune tongyun-rhyme)))
+#+end_src
+
+*** 查找同韵字功能的实现
+
+#+begin_src emacs-lisp :tangle (rosa/export 'cndict)
+(define-button-type 'cndict-button
+  'action #'cndict-button)
+
+(defun cndict-button (button)
+  (cndict (buffer-substring
+	   (button-get button 'begin)
+	   (button-get button 'end))))
+
+(defun cndict-rhyme-insert-tune (rhyme tune)
+  (insert
+   (format "*** %s, %s\n\n"
+	   (alist-get rhyme cndict-tongyun-name-alist)
+	   (alist-get tune cndict-tune-name-alist)))
+  (mapcar
+   #'(lambda (char)
+       (let ((name (char-to-string char)))
+	 (insert-text-button
+	  name
+	  'type 'cndict-button
+	  'begin (point)
+	  'end (1+ (point)))
+	 (insert "  ")))
+   (gethash tune
+	    (gethash rhyme cndict-tongyun-table)))
+  (insert "\n\n"))
+
+(defun cndict-rhyme (str)
+  (interactive (list (or (funcall region-extract-function nil)
+			 (current-kill 0 t))))
+  (let* ((char (char-to-string ;; 只要最后一个字
+		(aref str (1- (length str)))))
+	 (r (ignore-errors
+	      (cndict-char-content char))))
+    (if r
+	(progn
+	  (with-temp-buffer-window
+	      (format "*“%s”的释义*" char)
+	      (list (lambda (_ _)
+		      (org-mode)
+		      (toggle-word-wrap -1)
+		      nil))
+	      nil
+	    (with-current-buffer standard-output
+	      (let ((pys (cndict-char-pinyin char)))
+		(insert "* ")
+		(insert-text-button char
+				    'type 'cndict-button
+				    'begin (point)
+				    'end (1+ (point)))
+		(insert "\n\n")
+		(insert (format "- 读音: %s\n\n"
+				(mapconcat #'identity pys ", ")))
+		(insert (format "- 释义: %s\n\n" (substring r 3)))
+		(dolist (py pys)
+		  (let* ((pinyin-details (cnrhy-pinyin-details py))
+			 (tune (car pinyin-details))
+			 (rhyme (cdr pinyin-details)))
+		    (when (= tune 0) (setq tune 1)) ;; 轻声按照平声处理
+		    (insert
+		     (format "** %s, %s, %s\n\n"
+			     py
+			     (alist-get rhyme cndict-tongyun-name-alist)
+			     (alist-get tune cndict-tune-name-alist)))
+		    (if (memq tune '(2 4)) ;; 这时只需－1, 下面只需＋1
+		        (progn (cndict-rhyme-insert-tune rhyme tune)
+			       (cndict-rhyme-insert-tune rhyme (1- tune)))
+		      (progn (cndict-rhyme-insert-tune rhyme tune)
+			     (cndict-rhyme-insert-tune rhyme (1+ tune))))))))))
+      (message "未找到该字"))))
 #+end_src
 
 *** 生成字典与词典哈希表的代码
