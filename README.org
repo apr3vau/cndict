@@ -12,7 +12,7 @@ Chinese Dictionary 中文辞典。
 遵循 MIT 协议使用，谨在此向作者表示衷心的感谢！
 
 感谢[[https://emacs-china.org][ emacs-china ]]各位朋友的鼓励。感谢 [[https://emacs-china.org/u/manateelazycat/][@manateelazycat]] 前辈、 [[https://ldbeth.sdf.org/][@LdBeth]] 前辈在词典
-格式上的帮助。
+格式上的帮助；感谢 [[https://emacs-china.org/u/steve/summary][@steve]] 同学的陪伴与鼓励。
 
 ** 截图
 
@@ -89,8 +89,10 @@ cndict 另外还提供一个查询单字拼音的函数 ~cndict-char-pinyin~ ，
 ;; It used dictionary data from https://github.com/mapull/chinese-dictionary,
 ;; Thanks to it's author.
 ;;
-;; Thanks to @manateelazycat(https://emacs-china.org/u/manateelazycat/)
-;; for inspiration.
+;; Thanks to @manateelazycat (https://emacs-china.org/u/manateelazycat/)
+;; and @LdBeth (https://ldbeth.sdf.org/) for inspiration.
+;; Thanks to @steve (https://emacs-china.org/u/steve/summary)
+;; for his encouragement.
 ;;
 ;; Thanks to all my friends in https://emacs-china.org
 

@@ -26,8 +26,10 @@
 ;; It used dictionary data from https://github.com/mapull/chinese-dictionary,
 ;; Thanks to it's author.
 ;;
-;; Thanks to @manateelazycat(https://emacs-china.org/u/manateelazycat/)
-;; for inspiration.
+;; Thanks to @manateelazycat (https://emacs-china.org/u/manateelazycat/)
+;; and @LdBeth (https://ldbeth.sdf.org/) for inspiration.
+;; Thanks to @steve (https://emacs-china.org/u/steve/summary)
+;; for his encouragement.
 ;;
 ;; Thanks to all my friends in https://emacs-china.org
 
